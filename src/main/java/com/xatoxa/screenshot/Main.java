@@ -3,6 +3,7 @@ package com.xatoxa.screenshot;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -11,9 +12,13 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +31,7 @@ public class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage){
         if (!SystemTray.isSupported()) {
             System.out.println("SystemTray is not supported");
             return;
@@ -47,7 +52,36 @@ public class Main extends Application {
             Rectangle2D bounds = screens.get(i).getVisualBounds();
             StackPane root = new StackPane();
             Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
-            scene.setFill(Color.RED);
+            scene.setFill(Color.color(0f, 0f, 0f, 0.1));
+
+            Rectangle screenRect = new Rectangle();
+            //scene listeners
+            scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
+                    event -> {
+                screenRect.setLocation((int) event.getScreenX(), (int) event.getScreenY());
+                System.out.println("screenX: " + (int)event.getScreenX() + "; screenY: " + (int)event.getScreenY());
+                    });
+
+            scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
+                    event -> {
+                screenRect.setSize(
+                        (int) (event.getScreenX() - screenRect.x),
+                        (int) (event.getScreenY() - screenRect.y));
+                System.out.println("screenX: " + event.getScreenX() + "; screenY: " + event.getScreenY());
+
+                BufferedImage capture = null;
+                try {
+                    capture = new Robot().createScreenCapture(screenRect);
+                } catch (AWTException e) {
+                    throw new RuntimeException(e);
+                }
+                File imageFile = new File("screenshot.png");
+                try {
+                    ImageIO.write(capture, "png", imageFile );
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                });
 
             Stage stage;
             if (i == 0){
