@@ -36,52 +36,22 @@ public class Main extends Application {
             System.out.println("SystemTray is not supported");
             return;
         }
+        List<Stage> stages = new ArrayList<>();
 
         URL url = System.class.getResource("/image/icon.png");
         Image image = Toolkit.getDefaultToolkit().getImage(url);
-
         final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
-
         final SystemTray tray = SystemTray.getSystemTray();
 
         //поддержка нескольких экранов
         ObservableList<Screen> screens = Screen.getScreens();
-        List<Stage> stages = new ArrayList<>();
-
         for (int i = 0; i < screens.size(); i++){
             Rectangle2D bounds = screens.get(i).getVisualBounds();
             StackPane root = new StackPane();
             Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
             scene.setFill(Color.color(0f, 0f, 0f, 0.1));
 
-            Rectangle screenRect = new Rectangle();
-            //scene listeners
-            scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
-                    event -> {
-                screenRect.setLocation((int) event.getScreenX(), (int) event.getScreenY());
-                System.out.println("screenX: " + (int)event.getScreenX() + "; screenY: " + (int)event.getScreenY());
-                    });
-
-            scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
-                    event -> {
-                screenRect.setSize(
-                        (int) (event.getScreenX() - screenRect.x),
-                        (int) (event.getScreenY() - screenRect.y));
-                System.out.println("screenX: " + event.getScreenX() + "; screenY: " + event.getScreenY());
-
-                BufferedImage capture = null;
-                try {
-                    capture = new Robot().createScreenCapture(screenRect);
-                } catch (AWTException e) {
-                    throw new RuntimeException(e);
-                }
-                File imageFile = new File("screenshot.png");
-                try {
-                    ImageIO.write(capture, "png", imageFile );
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                });
+            addSceneListeners(scene, stages);
 
             Stage stage;
             if (i == 0){
@@ -104,6 +74,7 @@ public class Main extends Application {
             @Override
             public void mouseClicked(MouseEvent event) {
                 if (event.getButton() == MouseEvent.BUTTON1) {
+                    //TODO добавить изменение цвета курсора
                     Platform.runLater(() -> {
                         if (stateWindow == 1) {
                             stages.forEach(Stage::hide);
@@ -114,7 +85,9 @@ public class Main extends Application {
                         }
                     });
                 }
-
+                //TODO добавить эвент для ПКМ:
+                //      -настройка горячей клавиши для вызова функции
+                //      -выход
             }
         });
 
@@ -125,5 +98,45 @@ public class Main extends Application {
         }
 
         Platform.setImplicitExit(false);
+    }
+
+    private void addSceneListeners(Scene scene, List<Stage> stages){
+        Screenshot screenshot = new Screenshot();
+
+        //TODO добавить выделение области до отпускания кнопки мыши
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
+                event -> {
+                    screenshot.setPressedCoords((int) event.getScreenX(), (int) event.getScreenY());
+                    System.out.println("screenX: " + (int)event.getScreenX() + "; screenY: " + (int)event.getScreenY());
+                });
+
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
+                event -> {
+                    screenshot.setReleasedCoords((int) event.getScreenX(), (int) event.getScreenY());
+                    System.out.println("screenX: " + event.getScreenX() + "; screenY: " + event.getScreenY());
+                    stages.forEach(Stage::hide);
+                    stateWindow = 0;
+
+                    BufferedImage capture;
+                    File imageFile = new File("screenshot.png");
+                    try {
+                        capture = new Robot().createScreenCapture(screenshot.getRectangle());
+                        ImageIO.write(capture, "png", imageFile );
+                    } catch (AWTException e){
+                        throw new RuntimeException(e.getMessage());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e.getMessage());
+                    }
+
+                    //TODO когда скрин сделан, на месте верхнего левого угла появляется выбранная область
+                    //	- в оранжевой и черной рамке, каждая толщиной в один пиксель
+                    //	- нижняя оранжевая толще - 20 пикс
+                    //	на нижней оранжевой две кнопки справа
+                    //	- закрыть - крестик
+                    //	- сохранить выбранную область в буфер обмена и закрыть
+                    //	- при этом скрин висит поверх всех окон
+
+                    //TODO масштабирование скриншота и конпка для возврата к исходному масштабу
+                });
     }
 }
