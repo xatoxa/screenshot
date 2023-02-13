@@ -36,38 +36,15 @@ public class Main extends Application {
             System.out.println("SystemTray is not supported");
             return;
         }
-        List<Stage> stages = new ArrayList<>();
 
+        //получение stage для всех экранов
+        List<Stage> stages = getStagesForAllScreens(primaryStage);
+
+        //иконка для трея
         URL url = System.class.getResource("/image/icon.png");
         Image image = Toolkit.getDefaultToolkit().getImage(url);
         final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
         final SystemTray tray = SystemTray.getSystemTray();
-
-        //поддержка нескольких экранов
-        ObservableList<Screen> screens = Screen.getScreens();
-        for (int i = 0; i < screens.size(); i++){
-            Rectangle2D bounds = screens.get(i).getVisualBounds();
-            StackPane root = new StackPane();
-            Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
-            scene.setFill(Color.color(0f, 0f, 0f, 0.1));
-
-            addSceneListeners(scene, stages);
-
-            Stage stage;
-            if (i == 0){
-                stage = primaryStage;
-            }else {
-                stage = new Stage();
-            }
-            stage.initStyle(StageStyle.TRANSPARENT);
-            stage.setOpacity(0.2);
-            stage.setX(bounds.getMinX());
-            stage.setY(bounds.getMinY());
-
-            stage.setScene(scene);
-
-            stages.add(stage);
-        }
 
         //listener для иконки в трее
         trayIcon.addMouseListener(new MouseAdapter() {
@@ -98,6 +75,36 @@ public class Main extends Application {
         }
 
         Platform.setImplicitExit(false);
+    }
+
+    private List<Stage> getStagesForAllScreens(Stage primaryStage){
+        List<Stage> stages = new ArrayList<>();
+        ObservableList<Screen> screens = Screen.getScreens();
+        for (int i = 0; i < screens.size(); i++){
+            Rectangle2D bounds = screens.get(i).getVisualBounds();
+            StackPane root = new StackPane();
+            Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
+            scene.setFill(Color.color(0f, 0f, 0f, 0.1));
+
+            addSceneListeners(scene, stages);
+
+            Stage stage;
+            if (i == 0){
+                stage = primaryStage;
+            }else {
+                stage = new Stage();
+            }
+            stage.initStyle(StageStyle.TRANSPARENT);
+            stage.setOpacity(0.2);
+            stage.setX(bounds.getMinX());
+            stage.setY(bounds.getMinY());
+
+            stage.setScene(scene);
+
+            stages.add(stage);
+        }
+
+        return stages;
     }
 
     private void addSceneListeners(Scene scene, List<Stage> stages){
