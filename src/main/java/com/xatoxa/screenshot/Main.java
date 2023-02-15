@@ -116,6 +116,7 @@ public class Main extends Application {
                         (int) event.getSceneX(),
                         (int) event.getSceneY()));
 
+        //FIXME не продолжается область выделения, начатая на другом мониторе
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED,
                 event -> {
                     Region shape = new Region();
@@ -143,7 +144,7 @@ public class Main extends Application {
                     File imageFile = new File("screenshot.png");
                     try {
                         capture = new Robot().createScreenCapture(screenshot.getRectangle());
-                        ImageIO.write(capture, "png", imageFile );
+                        ImageIO.write(capture, "png", imageFile);
                     } catch (AWTException e){
                         throw new RuntimeException(e.getMessage());
                     } catch (IOException e) {
