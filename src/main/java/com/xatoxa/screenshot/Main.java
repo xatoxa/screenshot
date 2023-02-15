@@ -3,10 +3,10 @@ package com.xatoxa.screenshot;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -62,7 +62,7 @@ public class Main extends Application {
                         }
                     });
                 }
-                //TODO добавить эвент для ПКМ:
+                //TODO добавить event для ПКМ:
                 //      -настройка горячей клавиши для вызова функции
                 //      -выход
             }
@@ -82,11 +82,11 @@ public class Main extends Application {
         ObservableList<Screen> screens = Screen.getScreens();
         for (int i = 0; i < screens.size(); i++){
             Rectangle2D bounds = screens.get(i).getVisualBounds();
-            StackPane root = new StackPane();
+            Group root = new Group();
             Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight());
             scene.setFill(Color.color(0f, 0f, 0f, 0.1));
 
-            addSceneListeners(scene, stages);
+            addSceneListeners(scene, root, stages);
 
             Stage stage;
             if (i == 0){
@@ -98,7 +98,6 @@ public class Main extends Application {
             stage.setOpacity(0.2);
             stage.setX(bounds.getMinX());
             stage.setY(bounds.getMinY());
-
             stage.setScene(scene);
 
             stages.add(stage);
@@ -107,22 +106,43 @@ public class Main extends Application {
         return stages;
     }
 
-    private void addSceneListeners(Scene scene, List<Stage> stages){
-        Screenshot screenshot = new Screenshot();
+    private void addSceneListeners(Scene scene, Group group, List<Stage> stages){
+        ScreenshotRect screenshot = new ScreenshotRect();
 
-        //TODO добавить выделение области до отпускания кнопки мыши
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
                 event -> {
-                    screenshot.setPressedCoords((int) event.getScreenX(), (int) event.getScreenY());
+                    screenshot.setPressedCoords((int) event.getScreenX(), (int) event.getScreenY(), (int) event.getSceneX(), (int) event.getSceneY());
+
                     System.out.println("screenX: " + (int)event.getScreenX() + "; screenY: " + (int)event.getScreenY());
+        });
+
+        scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED,
+                event -> {
+                    double x = Math.min(screenshot.getSceneX1(), event.getSceneX());
+                    double y = Math.min(screenshot.getSceneY1(), event.getSceneY());
+                    double width = Math.max(screenshot.getSceneX1(), event.getSceneX()) - x;
+                    double height = Math.max(screenshot.getSceneY1(), event.getSceneY()) - y;
+                    Region reg = new Region();
+                    reg.setLayoutX(x);
+                    reg.setLayoutY(y);
+                    reg.setMinHeight(height);
+                    reg.setMinWidth(width);
+                    reg.setStyle("-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #ff7f32;");
+
+                    group.getChildren().clear();
+                    group.getChildren().add(reg);
+                    System.out.println(x + " " + y + " " + width + " " + height);
                 });
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
                 event -> {
                     screenshot.setReleasedCoords((int) event.getScreenX(), (int) event.getScreenY());
+
                     System.out.println("screenX: " + event.getScreenX() + "; screenY: " + event.getScreenY());
+
                     stages.forEach(Stage::hide);
                     stateWindow = 0;
+                    group.getChildren().clear();
 
                     BufferedImage capture;
                     File imageFile = new File("screenshot.png");
@@ -137,13 +157,13 @@ public class Main extends Application {
 
                     //TODO когда скрин сделан, на месте верхнего левого угла появляется выбранная область
                     //	- в оранжевой и черной рамке, каждая толщиной в один пиксель
-                    //	- нижняя оранжевая толще - 20 пикс
+                    //	- нижняя оранжевая толще - 20 пикселей
                     //	на нижней оранжевой две кнопки справа
                     //	- закрыть - крестик
                     //	- сохранить выбранную область в буфер обмена и закрыть
                     //	- при этом скрин висит поверх всех окон
 
-                    //TODO масштабирование скриншота и конпка для возврата к исходному масштабу
+                    //TODO масштабирование скриншота и кнопка для возврата к исходному масштабу
                 });
     }
 }
