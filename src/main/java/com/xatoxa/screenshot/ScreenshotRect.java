@@ -10,14 +10,6 @@ public class ScreenshotRect {
     private int x2;
     private int y2;
 
-    public int getX1() {
-        return x1;
-    }
-
-    public int getY1() {
-        return y1;
-    }
-
     public int getSceneX1() {
         return sceneX1;
     }
@@ -40,20 +32,10 @@ public class ScreenshotRect {
 
     public Rectangle getRectangle(){
         Rectangle rect = new Rectangle();
-        if (x2 < x1){
-            rect.x = x2;
-            rect.width = x1 - x2;
-        } else if (x2 > x1){
-            rect.x = x1;
-            rect.width = x2 - x1;
-        }
-        if (y2 < y1){
-            rect.y = y2;
-            rect.height = y1 - y2;
-        } else if (y2 > y1){
-            rect.y = y1;
-            rect.height = y2 - y1;
-        }
+        rect.x = Math.min(x1, x2);
+        rect.y = Math.min(y1, y2);
+        rect.width = Math.max(x1, x2) - rect.x;
+        rect.height = Math.max(y1, y2) - rect.y;
 
         return rect;
     }

@@ -38,7 +38,7 @@ public class Main extends Application {
         }
 
         //получение stage для всех экранов
-        List<Stage> stages = getStagesForAllScreens(primaryStage);
+        List<Stage> screenshotStages = getStagesForAllScreens(primaryStage);
 
         //иконка для трея
         URL url = System.class.getResource("/image/icon.png");
@@ -54,10 +54,10 @@ public class Main extends Application {
                     //TODO добавить изменение цвета курсора
                     Platform.runLater(() -> {
                         if (stateWindow == 1) {
-                            stages.forEach(Stage::hide);
+                            screenshotStages.forEach(Stage::hide);
                             stateWindow = 0;
                         } else if (stateWindow == 0) {
-                            stages.forEach(Stage::show);
+                            screenshotStages.forEach(Stage::show);
                             stateWindow = 1;
                         }
                     });
@@ -106,41 +106,36 @@ public class Main extends Application {
         return stages;
     }
 
-    private void addSceneListeners(Scene scene, Group group, List<Stage> stages){
+    private void addSceneListeners(Scene scene, Group group, List<Stage> screenshotStages){
         ScreenshotRect screenshot = new ScreenshotRect();
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
-                event -> {
-                    screenshot.setPressedCoords((int) event.getScreenX(), (int) event.getScreenY(), (int) event.getSceneX(), (int) event.getSceneY());
-
-                    System.out.println("screenX: " + (int)event.getScreenX() + "; screenY: " + (int)event.getScreenY());
-        });
+                event -> screenshot.setPressedCoords(
+                        (int) event.getScreenX(),
+                        (int) event.getScreenY(),
+                        (int) event.getSceneX(),
+                        (int) event.getSceneY()));
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED,
                 event -> {
-                    double x = Math.min(screenshot.getSceneX1(), event.getSceneX());
-                    double y = Math.min(screenshot.getSceneY1(), event.getSceneY());
-                    double width = Math.max(screenshot.getSceneX1(), event.getSceneX()) - x;
-                    double height = Math.max(screenshot.getSceneY1(), event.getSceneY()) - y;
-                    Region reg = new Region();
-                    reg.setLayoutX(x);
-                    reg.setLayoutY(y);
-                    reg.setMinHeight(height);
-                    reg.setMinWidth(width);
-                    reg.setStyle("-fx-border-style: solid; -fx-border-width: 2; -fx-border-color: #ff7f32;");
+                    Region shape = new Region();
+                    shape.setLayoutX(Math.min(screenshot.getSceneX1(), event.getSceneX()));
+                    shape.setLayoutY(Math.min(screenshot.getSceneY1(), event.getSceneY()));
+                    shape.setMinWidth(Math.max(screenshot.getSceneX1(), event.getSceneX()) - shape.getLayoutX());
+                    shape.setMinHeight(Math.max(screenshot.getSceneY1(), event.getSceneY()) - shape.getLayoutY());
+                    shape.setStyle(
+                            "-fx-border-style: solid; " +
+                            "-fx-border-width: 2; " +
+                            "-fx-border-color: #ff7f32;");
 
                     group.getChildren().clear();
-                    group.getChildren().add(reg);
-                    System.out.println(x + " " + y + " " + width + " " + height);
+                    group.getChildren().add(shape);
                 });
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
                 event -> {
                     screenshot.setReleasedCoords((int) event.getScreenX(), (int) event.getScreenY());
-
-                    System.out.println("screenX: " + event.getScreenX() + "; screenY: " + event.getScreenY());
-
-                    stages.forEach(Stage::hide);
+                    screenshotStages.forEach(Stage::hide);
                     stateWindow = 0;
                     group.getChildren().clear();
 
