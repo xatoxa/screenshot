@@ -3,28 +3,27 @@ package com.xatoxa.screenshot;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.layout.Region;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main extends Application {
-    int stateWindow = 0;
+    private static int stateWindow = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -140,26 +139,58 @@ public class Main extends Application {
                     stateWindow = 0;
                     group.getChildren().clear();
 
-                    BufferedImage capture;
-                    File imageFile = new File("screenshot.png");
                     try {
-                        capture = new Robot().createScreenCapture(screenshot.getRectangle());
-                        ImageIO.write(capture, "png", imageFile);
+                        showStageScreenshot(screenshot);
                     } catch (AWTException e){
                         throw new RuntimeException(e.getMessage());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e.getMessage());
                     }
-
-                    //TODO когда скрин сделан, на месте верхнего левого угла появляется выбранная область
-                    //	- в оранжевой и черной рамке, каждая толщиной в один пиксель
-                    //	- нижняя оранжевая толще - 20 пикселей
-                    //	на нижней оранжевой две кнопки справа
-                    //	- закрыть - крестик
-                    //	- сохранить выбранную область в буфер обмена и закрыть
-                    //	- при этом скрин висит поверх всех окон
-
-                    //TODO масштабирование скриншота и кнопка для возврата к исходному масштабу
                 });
+    }
+
+    private void showStageScreenshot(ScreenshotRect screenshotRect) throws AWTException {
+        Stage stageImage = new Stage();
+
+        BufferedImage capture = new Robot().createScreenCapture(screenshotRect.getRectangle());
+        javafx.scene.image.Image image = SwingFXUtils.toFXImage(capture, null);
+        ImageView imageView = new ImageView(image);
+        ImageViewPane viewPane = new ImageViewPane(imageView);
+
+        //чёрная граница вокруг скриншота
+        BorderPane blackBorder = new BorderPane(viewPane);
+        blackBorder.setStyle(
+                "-fx-border-style: solid; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-color: #000000;");
+
+        //TODO на нижней оранжевой две кнопки справа
+        //	- закрыть - крестик
+        //	- сохранить выбранную область в буфер обмена и закрыть
+        HBox hBox = new HBox(); //для кнопок
+        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 18; -fx-max-height: 18");
+
+        //оранжевая граница вокруг скриншота
+        BorderPane root = new BorderPane();
+        root.setCenter(blackBorder);
+        root.setBottom(hBox);
+        root.setStyle(
+                "-fx-border-style: solid; " +
+                "-fx-border-width: 1; " +
+                "-fx-border-color: #ff7f32;");
+
+        Scene sceneImage = new Scene(root);
+
+        //настройки stage
+        stageImage.setScene(sceneImage);
+        stageImage.setX(screenshotRect.getX1());
+        stageImage.setY(screenshotRect.getY1());
+        stageImage.setAlwaysOnTop(true);
+        stageImage.initStyle(StageStyle.UNDECORATED);
+
+        //TODO
+        // кнопка для возврата к исходному масштабу
+        // изменение масштаба с сохранением пропорций, с зажатым shift без
+        ResizeHelper.addResizeListener(stageImage);
+
+        stageImage.show();
     }
 }

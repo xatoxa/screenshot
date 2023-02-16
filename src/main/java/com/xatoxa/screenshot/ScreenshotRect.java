@@ -10,6 +10,14 @@ public class ScreenshotRect {
     private int x2;
     private int y2;
 
+    public int getX1() {
+        return x1;
+    }
+
+    public int getY1() {
+        return y1;
+    }
+
     public int getSceneX1() {
         return sceneX1;
     }
