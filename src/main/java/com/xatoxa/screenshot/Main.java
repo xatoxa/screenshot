@@ -163,13 +163,15 @@ public class Main extends Application {
                 "-fx-border-width: 1; " +
                 "-fx-border-color: #000000;");
 
-        //TODO на нижней оранжевой кнопки справа
-        //	- сохранить выбранную область в буфер обмена и закрыть
         Pane spacer = new Pane();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         //нижний бар для кнопок
-        HBox hBox = new HBox(spacer, setToOriginalSizeButton(stageImage, screenshotRect.getRectangle()), setCloseButton(stageImage));
+        HBox hBox = new HBox(
+                spacer,
+                setCopyToClipboardButton(capture, stageImage),
+                setToOriginalSizeButton(stageImage, screenshotRect.getRectangle()),
+                setCloseButton(stageImage));
         hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
 
         //оранжевая граница вокруг скриншота
@@ -219,6 +221,24 @@ public class Main extends Application {
         btnClose.setOnAction(event -> {
             stageImage.setHeight(rect.getHeight() + 24);
             stageImage.setWidth(rect.getWidth() + 4);
+        });
+        btnClose.setStyle(
+                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
+        btnClose.setGraphic(view);
+
+        return btnClose;
+    }
+
+    private Button setCopyToClipboardButton(BufferedImage image, Stage stage){
+        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnClipboard.png");
+        ImageView view = new ImageView(imgClose);
+        view.setFitHeight(18);
+        view.setPreserveRatio(true);
+        Button btnClose = new Button();
+        btnClose.setOnAction(event -> {
+            CopyImgToClipboard clipBoard = new CopyImgToClipboard(image);
+            clipBoard.copy();
+            stage.close();
         });
         btnClose.setStyle(
                 "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
