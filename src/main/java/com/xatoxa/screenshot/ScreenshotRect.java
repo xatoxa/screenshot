@@ -26,14 +26,14 @@ public class ScreenshotRect {
         return sceneY1;
     }
 
-    public void setPressedCoords(int x, int y, int sceneX, int sceneY){
+    public void setPressedCoordinates(int x, int y, int sceneX, int sceneY){
         this.x1 = x;
         this.y1 = y;
         this.sceneX1 = sceneX;
         this.sceneY1 = sceneY;
     }
 
-    public void setReleasedCoords(int x, int y){
+    public void setReleasedCoordinates(int x, int y){
         this.x2 = x;
         this.y2 = y;
     }
