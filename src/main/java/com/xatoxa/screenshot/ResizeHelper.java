@@ -7,6 +7,7 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 
@@ -42,12 +43,15 @@ public class ResizeHelper {
 
     static class ResizeListener implements EventHandler<MouseEvent> {
         private final Stage stage;
-        private final int border = 5;
+        private final int border = 4;
         private Cursor cursorEvent = Cursor.DEFAULT;
         private double startX = 0;
         private double startY = 0;
         private double xForDrag = 0;
         private double yForDrag = 0;
+        private double ratioWidth = 0;
+        private double ratioHeight = 0;
+        private boolean isShiftDown = false;
 
         public ResizeListener(Stage stage) {
             this.stage = stage;
@@ -57,6 +61,16 @@ public class ResizeHelper {
         public void handle(MouseEvent mouseEvent) {
             EventType<? extends MouseEvent> mouseEventType = mouseEvent.getEventType();
             Scene scene = stage.getScene();
+            scene.setOnKeyPressed(event -> {
+                if (event.getCode().equals(KeyCode.SHIFT)) {
+                    isShiftDown = true;
+                }
+            });
+            scene.setOnKeyReleased(event -> {
+                if (event.getCode().equals(KeyCode.SHIFT)){
+                    isShiftDown = false;
+                }
+            });
 
             double mouseEventX = mouseEvent.getSceneX(),
                     mouseEventY = mouseEvent.getSceneY(),
@@ -91,6 +105,9 @@ public class ResizeHelper {
                 startY = stage.getHeight() - mouseEventY;
                 xForDrag = stage.getX() - mouseEvent.getScreenX();
                 yForDrag = stage.getY() - mouseEvent.getScreenY();
+
+                ratioHeight = stage.getHeight() / stage.getWidth();
+                ratioWidth = stage.getWidth() / stage.getHeight();
             } else if (MouseEvent.MOUSE_DRAGGED.equals(mouseEventType)) {
                 if (!Cursor.DEFAULT.equals(cursorEvent)) {
                     if (!Cursor.W_RESIZE.equals(cursorEvent) && !Cursor.E_RESIZE.equals(cursorEvent)) {
@@ -99,10 +116,16 @@ public class ResizeHelper {
                             if (stage.getHeight() > minHeight || mouseEventY < 0) {
                                 stage.setHeight(stage.getY() - mouseEvent.getScreenY() + stage.getHeight());
                                 stage.setY(mouseEvent.getScreenY());
+                                if (!isShiftDown) {
+                                    stage.setWidth(stage.getHeight() * ratioWidth);
+                                }
                             }
                         } else {
                             if (stage.getHeight() > minHeight || mouseEventY + startY - stage.getHeight() > 0) {
                                 stage.setHeight(mouseEventY + startY);
+                                if (!isShiftDown) {
+                                    stage.setWidth(stage.getHeight() * ratioWidth);
+                                }
                             }
                         }
                     }
@@ -113,15 +136,20 @@ public class ResizeHelper {
                             if (stage.getWidth() > minWidth || mouseEventX < 0) {
                                 stage.setWidth(stage.getX() - mouseEvent.getScreenX() + stage.getWidth());
                                 stage.setX(mouseEvent.getScreenX());
+                                if (!isShiftDown) {
+                                    stage.setHeight(stage.getWidth() * ratioHeight);
+                                }
                             }
                         } else {
                             if (stage.getWidth() > minWidth || mouseEventX + startX - stage.getWidth() > 0) {
                                 stage.setWidth(mouseEventX + startX);
+                                if (!isShiftDown) {
+                                    stage.setHeight(stage.getWidth() * ratioHeight);
+                                }
                             }
                         }
                     }
-                } else
-                {
+                } else {
                     stage.setX(mouseEvent.getScreenX() + xForDrag);
                     stage.setY(mouseEvent.getScreenY() + yForDrag);
                 }

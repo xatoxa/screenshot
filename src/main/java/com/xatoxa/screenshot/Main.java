@@ -188,7 +188,6 @@ public class Main extends Application {
 
         //TODO
         // кнопка для возврата к исходному масштабу
-        // изменение масштаба с сохранением пропорций, с зажатым shift без
         ResizeHelper.addResizeListener(stageImage);
 
         stageImage.show();
