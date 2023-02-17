@@ -169,9 +169,9 @@ public class Main extends Application {
         //нижний бар для кнопок
         HBox hBox = new HBox(
                 spacer,
-                setCopyToClipboardButton(capture, stageImage),
-                setToOriginalSizeButton(stageImage, screenshotRect.getRectangle()),
-                setCloseButton(stageImage));
+                addCopyToClipboardButton(capture, stageImage),
+                addOriginalSizeButton(stageImage, screenshotRect.getRectangle()),
+                addCloseButton(stageImage));
         hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
 
         //оранжевая граница вокруг скриншота
@@ -192,57 +192,48 @@ public class Main extends Application {
         stageImage.setAlwaysOnTop(true);
         stageImage.initStyle(StageStyle.UNDECORATED);
 
-        //TODO
         ResizeHelper.addResizeListener(stageImage);
 
         stageImage.show();
     }
 
-    private Button setCloseButton(Stage stageImage){
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnClose.png");
+    private Button makeButton(String imgRes) {
+        javafx.scene.image.Image imgClose = new javafx.scene.image.Image(imgRes);
         ImageView view = new ImageView(imgClose);
         view.setFitHeight(18);
         view.setPreserveRatio(true);
-        Button btnClose = new Button();
-        btnClose.setOnAction(event -> stageImage.close());
-        btnClose.setStyle(
+        Button btn = new Button();
+        btn.setStyle(
                 "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
-        btnClose.setGraphic(view);
+        btn.setGraphic(view);
+
+        return btn;
+    }
+
+    private Button addCloseButton(Stage stageImage){
+        Button btnClose = makeButton("/image/btnClose.png");
+        btnClose.setOnAction(event -> stageImage.close());
 
         return btnClose;
     }
 
-    private Button setToOriginalSizeButton(Stage stageImage, Rectangle rect){
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnBack.png");
-        ImageView view = new ImageView(imgClose);
-        view.setFitHeight(18);
-        view.setPreserveRatio(true);
-        Button btnClose = new Button();
+    private Button addOriginalSizeButton(Stage stageImage, Rectangle rect){
+        Button btnClose = makeButton("/image/btnBack.png");
         btnClose.setOnAction(event -> {
             stageImage.setHeight(rect.getHeight() + 24);
             stageImage.setWidth(rect.getWidth() + 4);
         });
-        btnClose.setStyle(
-                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
-        btnClose.setGraphic(view);
 
         return btnClose;
     }
 
-    private Button setCopyToClipboardButton(BufferedImage image, Stage stage){
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnClipboard.png");
-        ImageView view = new ImageView(imgClose);
-        view.setFitHeight(18);
-        view.setPreserveRatio(true);
-        Button btnClose = new Button();
+    private Button addCopyToClipboardButton(BufferedImage image, Stage stage){
+        Button btnClose = makeButton("/image/btnClipboard.png");
         btnClose.setOnAction(event -> {
             CopyImgToClipboard clipBoard = new CopyImgToClipboard(image);
             clipBoard.copy();
             stage.close();
         });
-        btnClose.setStyle(
-                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
-        btnClose.setGraphic(view);
 
         return btnClose;
     }
