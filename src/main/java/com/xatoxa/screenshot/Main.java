@@ -4,9 +4,11 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -162,11 +164,14 @@ public class Main extends Application {
                 "-fx-border-width: 1; " +
                 "-fx-border-color: #000000;");
 
-        //TODO на нижней оранжевой две кнопки справа
-        //	- закрыть - крестик
+        //TODO на нижней оранжевой кнопки справа
         //	- сохранить выбранную область в буфер обмена и закрыть
-        HBox hBox = new HBox(); //для кнопок
-        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 18; -fx-max-height: 18");
+        // кнопка для возврата к исходному масштабу
+        Pane spacer = new Pane();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        HBox hBox = new HBox(spacer, setCloseButton(stageImage)); //для кнопок
+        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
 
         //оранжевая граница вокруг скриншота
         BorderPane root = new BorderPane();
@@ -187,9 +192,22 @@ public class Main extends Application {
         stageImage.initStyle(StageStyle.UNDECORATED);
 
         //TODO
-        // кнопка для возврата к исходному масштабу
         ResizeHelper.addResizeListener(stageImage);
 
         stageImage.show();
+    }
+
+    private Button setCloseButton(Stage stageImage){
+        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnClose.png");
+        ImageView view = new ImageView(imgClose);
+        view.setFitHeight(18);
+        view.setPreserveRatio(true);
+        Button btnClose = new Button();
+        btnClose.setOnAction(event -> stageImage.close());
+        btnClose.setStyle(
+                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
+        btnClose.setGraphic(view);
+
+        return btnClose;
     }
 }
