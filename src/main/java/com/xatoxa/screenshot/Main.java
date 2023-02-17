@@ -109,7 +109,7 @@ public class Main extends Application {
         ScreenshotRect screenshot = new ScreenshotRect();
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
-                event -> screenshot.setPressedCoords(
+                event -> screenshot.setPressedCoordinates(
                         (int) event.getScreenX(),
                         (int) event.getScreenY(),
                         (int) event.getSceneX(),
@@ -134,7 +134,7 @@ public class Main extends Application {
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
                 event -> {
-                    screenshot.setReleasedCoords((int) event.getScreenX(), (int) event.getScreenY());
+                    screenshot.setReleasedCoordinates((int) event.getScreenX(), (int) event.getScreenY());
                     screenshotStages.forEach(Stage::hide);
                     stateWindow = 0;
                     group.getChildren().clear();
