@@ -46,6 +46,18 @@ public class Main extends Application {
         final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
         final SystemTray tray = SystemTray.getSystemTray();
 
+        PopupMenu menu = new PopupMenu("Меню");
+
+        //TODO добавить item "настройка горячей клавиши"
+        MenuItem itemExit = new MenuItem("Выход");
+        itemExit.setActionCommand("Выход");
+        itemExit.addActionListener(e -> {
+            tray.remove(trayIcon);
+            Platform.runLater(Platform::exit);
+        });
+        menu.add(itemExit);
+        trayIcon.setPopupMenu(menu);
+
         //listener для иконки в трее
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -62,9 +74,6 @@ public class Main extends Application {
                         }
                     });
                 }
-                //TODO добавить event для ПКМ:
-                //      -настройка горячей клавиши для вызова функции
-                //      -выход
             }
         });
 
