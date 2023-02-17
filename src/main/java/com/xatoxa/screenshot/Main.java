@@ -4,7 +4,6 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -166,11 +165,11 @@ public class Main extends Application {
 
         //TODO на нижней оранжевой кнопки справа
         //	- сохранить выбранную область в буфер обмена и закрыть
-        // кнопка для возврата к исходному масштабу
         Pane spacer = new Pane();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        HBox hBox = new HBox(spacer, setCloseButton(stageImage)); //для кнопок
+        //нижний бар для кнопок
+        HBox hBox = new HBox(spacer, setToOriginalSizeButton(stageImage, screenshotRect.getRectangle()), setCloseButton(stageImage));
         hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
 
         //оранжевая граница вокруг скриншота
@@ -204,6 +203,23 @@ public class Main extends Application {
         view.setPreserveRatio(true);
         Button btnClose = new Button();
         btnClose.setOnAction(event -> stageImage.close());
+        btnClose.setStyle(
+                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
+        btnClose.setGraphic(view);
+
+        return btnClose;
+    }
+
+    private Button setToOriginalSizeButton(Stage stageImage, Rectangle rect){
+        javafx.scene.image.Image imgClose = new javafx.scene.image.Image("/image/btnBack.png");
+        ImageView view = new ImageView(imgClose);
+        view.setFitHeight(18);
+        view.setPreserveRatio(true);
+        Button btnClose = new Button();
+        btnClose.setOnAction(event -> {
+            stageImage.setHeight(rect.getHeight() + 24);
+            stageImage.setWidth(rect.getWidth() + 4);
+        });
         btnClose.setStyle(
                 "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
         btnClose.setGraphic(view);
