@@ -19,9 +19,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,16 +89,6 @@ public class App extends Application {
     private List<Stage> getStagesForAllScreens(Stage primaryStage){
         List<Stage> stages = new ArrayList<>();
         ObservableList<Screen> screens = Screen.getScreens();
-        
-        /*System.out.println(Toolkit.getDefaultToolkit().getScreenResolution());
-
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter("dpi.txt"));
-            writer.write(String.valueOf(Toolkit.getDefaultToolkit().getScreenResolution()));
-            writer.close();
-        }catch (IOException e){
-            System.out.println("file err");
-        }*/
 
         for (int i = 0; i < screens.size(); i++){
             Rectangle2D bounds = screens.get(i).getVisualBounds();
@@ -214,6 +201,8 @@ public class App extends Application {
         stageImage.setY(screenshotRect.getY1());
         stageImage.setAlwaysOnTop(true);
         stageImage.initStyle(StageStyle.UNDECORATED);
+        stageImage.setMinHeight(50);
+        stageImage.setMinWidth(200);
 
         ResizeHelper.addResizeListener(stageImage);
 

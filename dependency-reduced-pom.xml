@@ -22,7 +22,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <finalName>screenshot_v0.9.6</finalName>
+              <finalName>screenshot_v0.9.6.1</finalName>
               <shadedArtifactAttached>true</shadedArtifactAttached>
               <transformers>
                 <transformer>

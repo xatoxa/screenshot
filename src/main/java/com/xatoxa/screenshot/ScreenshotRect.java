@@ -11,11 +11,11 @@ public class ScreenshotRect {
     private int y2;
 
     public int getX1() {
-        return x1;
+        return Math.min(x1, x2);
     }
 
     public int getY1() {
-        return y1;
+        return Math.min(y1, y2);
     }
 
     public int getSceneX1() {
@@ -27,6 +27,7 @@ public class ScreenshotRect {
     }
 
     public void setPressedCoordinates(int x, int y, int sceneX, int sceneY){
+        //FIXME написать min/max функции сюда, а не в get
         this.x1 = x;
         this.y1 = y;
         this.sceneX1 = sceneX;
