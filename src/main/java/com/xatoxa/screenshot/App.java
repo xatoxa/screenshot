@@ -3,7 +3,6 @@ package com.xatoxa.screenshot;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -41,7 +40,7 @@ public class App extends Application {
         List<Stage> screenshotStages = getStagesForAllScreens(primaryStage);
 
         //иконка для трея
-        URL url = System.class.getResource("/image/icon.png");
+        URL url = App.class.getResource("/com/xatoxa/screenshot/image/icon.png");
         Image image = Toolkit.getDefaultToolkit().getImage(url);
         final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
         final SystemTray tray = SystemTray.getSystemTray();
@@ -161,8 +160,10 @@ public class App extends Application {
     private void showStageScreenshot(ScreenshotRect screenshotRect) throws AWTException {
         Stage stageImage = new Stage();
 
+        //FIXME поменять функцию на зависящую от масштаба
         BufferedImage capture = new Robot().createScreenCapture(screenshotRect.getRectangle());
-        javafx.scene.image.Image image = SwingFXUtils.toFXImage(capture, null);
+        //FIXME исправить cast
+        javafx.scene.image.Image image = null;
         ImageView imageView = new ImageView(image);
         ImageViewPane viewPane = new ImageViewPane(imageView);
 
@@ -223,14 +224,14 @@ public class App extends Application {
     }
 
     private Button addCloseButton(Stage stageImage){
-        Button btnClose = makeButton("/image/btnClose.png");
+        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClose.png");
         btnClose.setOnAction(event -> stageImage.close());
 
         return btnClose;
     }
 
     private Button addOriginalSizeButton(Stage stageImage, Rectangle rect){
-        Button btnClose = makeButton("/image/btnBack.png");
+        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
         btnClose.setOnAction(event -> {
             stageImage.setHeight(rect.getHeight() + 24);
             stageImage.setWidth(rect.getWidth() + 4);
@@ -240,7 +241,7 @@ public class App extends Application {
     }
 
     private Button addCopyToClipboardButton(BufferedImage image, Stage stage){
-        Button btnClose = makeButton("/image/btnClipboard.png");
+        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClipboard.png");
         btnClose.setOnAction(event -> {
             CopyImgToClipboard clipBoard = new CopyImgToClipboard(image);
             clipBoard.copy();
