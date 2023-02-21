@@ -201,8 +201,8 @@ public class App extends Application {
         stageImage.setY(screenshotRect.getY1());
         stageImage.setAlwaysOnTop(true);
         stageImage.initStyle(StageStyle.UNDECORATED);
-        stageImage.setMinHeight(50);
-        stageImage.setMinWidth(200);
+        stageImage.setMinHeight(56);
+        stageImage.setMinWidth(56);
 
         ResizeHelper.addResizeListener(stageImage);
 
