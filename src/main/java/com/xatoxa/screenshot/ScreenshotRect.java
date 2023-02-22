@@ -1,6 +1,6 @@
 package com.xatoxa.screenshot;
 
-import java.awt.*;
+import javafx.geometry.Rectangle2D;
 
 public class ScreenshotRect {
     private int x1;
@@ -26,6 +26,14 @@ public class ScreenshotRect {
         return sceneY1;
     }
 
+    public int getW(){
+        return Math.max(x1, x2) - Math.min(x1, x2);
+    }
+
+    public int getH(){
+        return Math.max(y1, y2) - Math.min(y1, y2);
+    }
+
     public void setPressedCoordinates(int x, int y, int sceneX, int sceneY){
         //FIXME написать min/max функции сюда, а не в get
         this.x1 = x;
@@ -39,13 +47,11 @@ public class ScreenshotRect {
         this.y2 = y;
     }
 
-    public Rectangle getRectangle(){
-        Rectangle rect = new Rectangle();
-        rect.x = Math.min(x1, x2);
-        rect.y = Math.min(y1, y2);
-        rect.width = Math.max(x1, x2) - rect.x;
-        rect.height = Math.max(y1, y2) - rect.y;
-
-        return rect;
+    public Rectangle2D getRectangle(){
+        return new Rectangle2D(
+                Math.min(x1, x2),
+                Math.min(y1, y2),
+                Math.max(x1, x2) - Math.min(x1, x2),
+                Math.max(y1, y2) - Math.min(y1, y2));
     }
 }
