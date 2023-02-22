@@ -69,13 +69,14 @@
                         <!-- Default configuration for running with: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
-                            <mainClass>com.xatoxa.screenshot.Main</mainClass>
+                            <mainClass>com.xatoxa.screenshot.App</mainClass>
                             <launcher>app</launcher>
                             <jlinkZipName>app</jlinkZipName>
                             <jlinkImageName>app</jlinkImageName>
                             <noManPages>true</noManPages>
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
+                            <executable>d:\Program Files\Java\jdk-11.0.2\bin\java</executable>
                         </configuration>
                     </execution>
                 </executions>
@@ -83,14 +84,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
+                        <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>screenshot_v0.9.6.2</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>project-classifier</shadedClassifierName>
+                            <outputFile>shade\${project.artifactId}-${project.version}.jar</outputFile>
                             <transformers>
                                 <transformer implementation=
                                                      "org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">

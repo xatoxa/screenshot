@@ -1,4 +1,4 @@
-module com.example.javafxdemo {
+module com.xatoxa.screenshot {
     requires javafx.controls;
     requires javafx.fxml;
 
