@@ -6,7 +6,7 @@
 
     <groupId>com.xatoxa</groupId>
     <artifactId>screenshot</artifactId>
-    <version>0.9.6.1</version>
+    <version>0.9.6.2</version>
     <name>screenshot</name>
 
     <properties>
@@ -89,7 +89,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <finalName>screenshot_v0.9.6.1</finalName>
+                            <finalName>screenshot_v0.9.6.2</finalName>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <transformers>
                                 <transformer implementation=

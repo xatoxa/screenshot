@@ -8,8 +8,12 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.robot.Robot;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -17,12 +21,11 @@ import javafx.stage.StageStyle;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class App extends Application {
+public class  App extends Application {
     private static int stateWindow = 0;
 
     public static void main(String[] args) {
@@ -108,6 +111,7 @@ public class App extends Application {
             stage.setX(bounds.getMinX());
             stage.setY(bounds.getMinY());
             stage.setScene(scene);
+            stage.setAlwaysOnTop(true);
 
             stages.add(stage);
         }
@@ -117,11 +121,12 @@ public class App extends Application {
 
     private void addSceneListeners(Scene scene, Group group, List<Stage> screenshotStages){
         ScreenshotRect screenshot = new ScreenshotRect();
+        Robot robot = new Robot();
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED,
                 event -> screenshot.setPressedCoordinates(
-                        (int) event.getScreenX(),
-                        (int) event.getScreenY(),
+                        (int) robot.getMouseX(),
+                        (int) robot.getMouseY(),
                         (int) event.getSceneX(),
                         (int) event.getSceneY()));
 
@@ -144,7 +149,7 @@ public class App extends Application {
 
         scene.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED,
                 event -> {
-                    screenshot.setReleasedCoordinates((int) event.getScreenX(), (int) event.getScreenY());
+                    screenshot.setReleasedCoordinates((int) robot.getMouseX(), (int) robot.getMouseY());
                     screenshotStages.forEach(Stage::hide);
                     stateWindow = 0;
                     group.getChildren().clear();
@@ -159,11 +164,8 @@ public class App extends Application {
 
     private void showStageScreenshot(ScreenshotRect screenshotRect) throws AWTException {
         Stage stageImage = new Stage();
-
-        //FIXME поменять функцию на зависящую от масштаба
-        BufferedImage capture = new Robot().createScreenCapture(screenshotRect.getRectangle());
-        //FIXME исправить cast
-        javafx.scene.image.Image image = null;
+        WritableImage image = new WritableImage(screenshotRect.getW(), screenshotRect.getH());
+        image = new Robot().getScreenCapture(image, screenshotRect.getRectangle());
         ImageView imageView = new ImageView(image);
         ImageViewPane viewPane = new ImageViewPane(imageView);
 
@@ -180,7 +182,7 @@ public class App extends Application {
         //нижний бар для кнопок
         HBox hBox = new HBox(
                 spacer,
-                addCopyToClipboardButton(capture, stageImage),
+                addCopyToClipboardButton(image, stageImage),
                 addOriginalSizeButton(stageImage, screenshotRect.getRectangle()),
                 addCloseButton(stageImage));
         hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
@@ -211,7 +213,7 @@ public class App extends Application {
     }
 
     private Button makeButton(String imgRes) {
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image(imgRes);
+        javafx.scene.image.Image imgClose = new javafx.scene.image.Image(getClass().getResourceAsStream(imgRes));
         ImageView view = new ImageView(imgClose);
         view.setFitHeight(18);
         view.setPreserveRatio(true);
@@ -230,7 +232,7 @@ public class App extends Application {
         return btnClose;
     }
 
-    private Button addOriginalSizeButton(Stage stageImage, Rectangle rect){
+    private Button addOriginalSizeButton(Stage stageImage, Rectangle2D rect){
         Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
         btnClose.setOnAction(event -> {
             stageImage.setHeight(rect.getHeight() + 24);
@@ -240,11 +242,14 @@ public class App extends Application {
         return btnClose;
     }
 
-    private Button addCopyToClipboardButton(BufferedImage image, Stage stage){
+    private Button addCopyToClipboardButton(WritableImage image, Stage stage){
         Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClipboard.png");
         btnClose.setOnAction(event -> {
-            CopyImgToClipboard clipBoard = new CopyImgToClipboard(image);
-            clipBoard.copy();
+            Clipboard clipboard = Clipboard.getSystemClipboard();
+            ClipboardContent content = new ClipboardContent();
+            content.putImage(image);
+            clipboard.setContent(content);
+
             stage.close();
         });
 
