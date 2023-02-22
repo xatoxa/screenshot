@@ -1,6 +1,6 @@
 package com.xatoxa.screenshot;
 
-import javafx.geometry.Rectangle2D;
+import java.awt.*;
 
 public class ScreenshotRect {
     private int x1;
@@ -47,8 +47,8 @@ public class ScreenshotRect {
         this.y2 = y;
     }
 
-    public Rectangle2D getRectangle(){
-        return new Rectangle2D(
+    public Rectangle getRectangle(){
+        return new Rectangle(
                 Math.min(x1, x2),
                 Math.min(y1, y2),
                 Math.max(x1, x2) - Math.min(x1, x2),
