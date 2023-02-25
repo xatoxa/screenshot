@@ -1,5 +1,9 @@
 package com.xatoxa.screenshot;
 
+import com.github.kwhat.jnativehook.GlobalScreen;
+import com.github.kwhat.jnativehook.NativeHookException;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
+import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -87,6 +91,40 @@ public class  App extends Application {
         } catch (AWTException e) {
             System.out.println("TrayIcon could not be added.");
         }
+
+        try {
+            GlobalScreen.registerNativeHook();
+        } catch (NativeHookException e) {
+            throw new RuntimeException(e);
+        }
+        GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
+            boolean isAltPressed = false;
+            boolean isShiftPressed = false;
+            boolean isMetaPressed = false;
+            boolean isCtrlPressed = false;
+
+            @Override
+            public void nativeKeyPressed(NativeKeyEvent nativeEvent) {
+                isAltPressed = (nativeEvent.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
+                isShiftPressed = (nativeEvent.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
+                isMetaPressed = (nativeEvent.getModifiers() & NativeKeyEvent.META_MASK) != 0;
+                isCtrlPressed = (nativeEvent.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
+
+                if (nativeEvent.getKeyCode() == NativeKeyEvent.VC_X && isAltPressed && isMetaPressed){
+                    Platform.runLater(() -> screenshotStages.forEach(Stage::show));
+                }
+            }
+
+            @Override
+            public void nativeKeyReleased(NativeKeyEvent nativeEvent) {
+                isAltPressed = (nativeEvent.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
+                isShiftPressed = (nativeEvent.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
+                isMetaPressed = (nativeEvent.getModifiers() & NativeKeyEvent.META_MASK) != 0;
+                isCtrlPressed = (nativeEvent.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
+
+
+            }
+        });
 
         Platform.setImplicitExit(false);
     }

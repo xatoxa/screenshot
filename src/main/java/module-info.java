@@ -4,6 +4,8 @@ module com.xatoxa.screenshot {
 
     requires java.desktop;
 
+    requires com.github.kwhat.jnativehook;
+
     opens com.xatoxa.screenshot;
     exports com.xatoxa.screenshot;
 }
