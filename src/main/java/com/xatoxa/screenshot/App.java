@@ -12,10 +12,10 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -45,9 +45,29 @@ public class  App extends Application {
             System.out.println("SystemTray is not supported");
             return;
         }
-
         //получение stage для всех экранов
         List<Stage> screenshotStages = getStagesForAllScreens(primaryStage);
+
+        //Объект слушателя горячих клавиш
+        ShortcutKeyListener shortcutKeyListener = new ShortcutKeyListener(screenshotStages);
+
+        //Stage для настройки горячей клавиши
+        Stage stageShortcut = new Stage();
+        javafx.scene.control.Label label = new javafx.scene.control.Label();
+        label.setFont(Font.font("Segoe UI", 15));
+        stageShortcut.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (!event.getCode().isModifierKey()) {
+                label.setText(createCombo(event).getDisplayText());
+                shortcutKeyListener.refreshShortcutKey(
+                        event.getCode().getCode(),
+                        event.isAltDown(),
+                        event.isShiftDown(),
+                        event.isMetaDown(),
+                        event.isControlDown());
+            }
+        });
+        stageShortcut.setScene(new Scene(new StackPane(label), 500, 300));
+        stageShortcut.setResizable(false);
 
         //иконка для трея
         URL url = App.class.getResource("/com/xatoxa/screenshot/image/icon.png");
@@ -55,15 +75,21 @@ public class  App extends Application {
         final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
         final SystemTray tray = SystemTray.getSystemTray();
 
+        //меню в трее
         PopupMenu menu = new PopupMenu("Меню");
 
-        //TODO добавить item "настройка горячей клавиши"
+        MenuItem itemShortcut = new MenuItem("Горячая клавиша");
+        itemShortcut.setActionCommand("Горячая клавиша");
+        itemShortcut.addActionListener(e -> Platform.runLater(stageShortcut::show));
+
         MenuItem itemExit = new MenuItem("Выход");
         itemExit.setActionCommand("Выход");
         itemExit.addActionListener(e -> {
             tray.remove(trayIcon);
             Platform.runLater(Platform::exit);
         });
+
+        menu.add(itemShortcut);
         menu.add(itemExit);
         trayIcon.setPopupMenu(menu);
 
@@ -92,16 +118,16 @@ public class  App extends Application {
             System.out.println("TrayIcon could not be added.");
         }
 
+        //глобальный прослушиватель нажатий клавиш
         try {
             GlobalScreen.registerNativeHook();
             Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
             logger.setLevel(Level.WARNING);
-
             logger.setUseParentHandlers(false);
 
-            GlobalScreen.addNativeKeyListener(new ShortcutKeyListener(screenshotStages));
+            GlobalScreen.addNativeKeyListener(shortcutKeyListener);
         } catch (NativeHookException e) {
-            throw new RuntimeException(e);
+            System.out.println("Global key listener error");
         }
 
         Platform.setImplicitExit(false);
@@ -302,5 +328,22 @@ public class  App extends Application {
         graphics.dispose();
 
         return bufferedImage;
+    }
+
+    private KeyCombination createCombo(KeyEvent event) {
+        var modifiers = new ArrayList<KeyCombination.Modifier>();
+        if (event.isControlDown()) {
+            modifiers.add(KeyCombination.CONTROL_DOWN);
+        }
+        if (event.isMetaDown()) {
+            modifiers.add(KeyCombination.META_DOWN);
+        }
+        if (event.isAltDown()) {
+            modifiers.add(KeyCombination.ALT_DOWN);
+        }
+        if (event.isShiftDown()) {
+            modifiers.add(KeyCombination.SHIFT_DOWN);
+        }
+        return new KeyCodeCombination(event.getCode(), modifiers.toArray(KeyCombination.Modifier[]::new));
     }
 }

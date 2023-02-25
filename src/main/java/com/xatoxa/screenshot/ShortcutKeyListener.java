@@ -5,10 +5,14 @@ import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ShortcutKeyListener implements NativeKeyListener {
+    int keyCode = 88;
+    boolean isAlt = true;
+    boolean isShift = false;
+    boolean isMeta = true;
+    boolean isCtrl = false;
     boolean isAltPressed = false;
     boolean isShiftPressed = false;
     boolean isMetaPressed = false;
@@ -20,6 +24,14 @@ public class ShortcutKeyListener implements NativeKeyListener {
         this.stages = stages;
     }
 
+    public void refreshShortcutKey(int keyCode, boolean isAlt, boolean isShift, boolean isMeta, boolean isCtrl){
+        this.keyCode = keyCode;
+        this.isAlt = isAlt;
+        this.isShift = isShift;
+        this.isMeta = isMeta;
+        this.isCtrl = isCtrl;
+    }
+
     @Override
     public void nativeKeyPressed(NativeKeyEvent nativeEvent) {
         isAltPressed = (nativeEvent.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
@@ -27,7 +39,11 @@ public class ShortcutKeyListener implements NativeKeyListener {
         isMetaPressed = (nativeEvent.getModifiers() & NativeKeyEvent.META_MASK) != 0;
         isCtrlPressed = (nativeEvent.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
 
-        if (nativeEvent.getKeyCode() == NativeKeyEvent.VC_X && isAltPressed && isMetaPressed){
+        if (nativeEvent.getRawCode() == this.keyCode
+                && (!isAlt || isAlt == isAltPressed)
+                && (!isShift || isShift == isShiftPressed)
+                && (!isMeta || isMeta == isMetaPressed)
+                && (!isCtrl || isCtrl == isCtrlPressed)){
             Platform.runLater(() -> stages.forEach(Stage::show));
         }
     }
