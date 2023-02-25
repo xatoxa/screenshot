@@ -8,11 +8,11 @@ import javafx.stage.Stage;
 import java.util.List;
 
 public class ShortcutKeyListener implements NativeKeyListener {
-    int keyCode = 88;
-    boolean isAlt = true;
-    boolean isShift = false;
-    boolean isMeta = true;
-    boolean isCtrl = false;
+    int keyCode;
+    boolean isAlt;
+    boolean isShift;
+    boolean isMeta;
+    boolean isCtrl;
     boolean isAltPressed = false;
     boolean isShiftPressed = false;
     boolean isMetaPressed = false;
@@ -20,8 +20,13 @@ public class ShortcutKeyListener implements NativeKeyListener {
 
     List<Stage> stages;
 
-    public ShortcutKeyListener(List<Stage> stages){
+    public ShortcutKeyListener(List<Stage> stages, int keyCode, boolean isAlt, boolean isShift, boolean isMeta, boolean isCtrl){
         this.stages = stages;
+        this.keyCode = keyCode;
+        this.isAlt = isAlt;
+        this.isShift = isShift;
+        this.isMeta = isMeta;
+        this.isCtrl = isCtrl;
     }
 
     public void refreshShortcutKey(int keyCode, boolean isAlt, boolean isShift, boolean isMeta, boolean isCtrl){

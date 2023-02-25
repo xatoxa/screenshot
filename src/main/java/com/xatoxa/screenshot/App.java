@@ -2,6 +2,7 @@ package com.xatoxa.screenshot;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -25,15 +26,17 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.MultiResolutionImage;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.prefs.Preferences;
 
-public class  App extends Application {
+public class App extends Application {
     private static int stateWindow = 0;
     private static List<Stage> screenshotStages;
     private static Stage stageShortcut;
-
+    private static Preferences prefs;
 
     public static void main(String[] args) {
         launch(args);
@@ -45,11 +48,21 @@ public class  App extends Application {
             System.out.println("SystemTray is not supported");
             return;
         }
+
         //получение stage для всех экранов
         screenshotStages = getStagesForAllScreens(primaryStage);
 
+        //загрузка настроек юзера
+        prefs = Preferences.userRoot();
+
         //Объект слушателя горячих клавиш
-        ShortcutKeyListener shortcutKeyListener = new ShortcutKeyListener(screenshotStages);
+        ShortcutKeyListener shortcutKeyListener = new ShortcutKeyListener(
+                        screenshotStages,
+                        prefs.getInt("keyCode", 88),
+                        prefs.getBoolean("isAlt", true),
+                        prefs.getBoolean("isShift", false),
+                        prefs.getBoolean("isMeta", true),
+                        prefs.getBoolean("isCtrl", false));
 
         //Stage для настройки горячей клавиши
         stageShortcut = getShortcutStage(shortcutKeyListener);
@@ -301,6 +314,7 @@ public class  App extends Application {
         Stage stage = new Stage();
         javafx.scene.control.Label label = new javafx.scene.control.Label();
         label.setFont(Font.font("Segoe UI", 15));
+        label.setText(getPreferencesTextShortcut());
         stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (!event.getCode().isModifierKey()) {
                 label.setText(createCombo(event).getDisplayText());
@@ -310,12 +324,25 @@ public class  App extends Application {
                         event.isShiftDown(),
                         event.isMetaDown(),
                         event.isControlDown());
+                prefs.putInt("keyCode", event.getCode().getCode());
+                prefs.putBoolean("isAlt", event.isAltDown());
+                prefs.putBoolean("isShift", event.isShiftDown());
+                prefs.putBoolean("isMeta", event.isMetaDown());
+                prefs.putBoolean("isCtrl", event.isControlDown());
             }
         });
         stage.setScene(new Scene(new StackPane(label), 500, 300));
         stage.setResizable(false);
 
         return stage;
+    }
+
+    private String getPreferencesTextShortcut(){
+        return (prefs.getBoolean("isAlt", true) ? "Alt+" : "") +
+                (prefs.getBoolean("isShift", false) ? "Shift+" : "") +
+                (prefs.getBoolean("isMeta", true) ? "Meta+" : "") +
+                (prefs.getBoolean("isCtrl", false) ? "Ctrl+" : "") +
+                (char) (prefs.getInt("keyCode", 88));
     }
 
     private PopupMenu getMenuForTray(SystemTray tray, TrayIcon trayIcon){
