@@ -7,6 +7,8 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.HPos;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -314,7 +316,9 @@ public class App extends Application {
         Stage stage = new Stage();
         javafx.scene.control.Label label = new javafx.scene.control.Label();
         label.setFont(Font.font("Segoe UI", 15));
+        label.setAlignment(Pos.CENTER);
         label.setText(getPreferencesTextShortcut());
+
         stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
             if (!event.getCode().isModifierKey()) {
                 label.setText(createCombo(event).getDisplayText());
@@ -331,8 +335,24 @@ public class App extends Application {
                 prefs.putBoolean("isCtrl", event.isControlDown());
             }
         });
-        stage.setScene(new Scene(new StackPane(label), 500, 300));
+
+        Button buttonOk = new Button("ОK");
+        buttonOk.setOnAction(actionEvent -> {
+            stage.close();
+        });
+        buttonOk.setAlignment(Pos.CENTER);
+
+        GridPane gridPane = new GridPane();
+        gridPane.add(label, 0, 0);
+        gridPane.add(buttonOk, 0, 1);
+        GridPane.setHalignment(label, HPos.CENTER);
+        GridPane.setHalignment(buttonOk, HPos.CENTER);
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.getRowConstraints().addAll(new RowConstraints(50), new RowConstraints(50));
+
+        stage.setScene(new Scene(gridPane, 300, 100));
         stage.setResizable(false);
+        stage.initStyle(StageStyle.UNIFIED);
 
         return stage;
     }
