@@ -2,8 +2,6 @@ package com.xatoxa.screenshot;
 
 import com.github.kwhat.jnativehook.GlobalScreen;
 import com.github.kwhat.jnativehook.NativeHookException;
-import com.github.kwhat.jnativehook.keyboard.NativeKeyEvent;
-import com.github.kwhat.jnativehook.keyboard.NativeKeyListener;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
@@ -31,6 +29,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class  App extends Application {
     private static int stateWindow = 0;
@@ -94,37 +94,15 @@ public class  App extends Application {
 
         try {
             GlobalScreen.registerNativeHook();
+            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
+            logger.setLevel(Level.WARNING);
+
+            logger.setUseParentHandlers(false);
+
+            GlobalScreen.addNativeKeyListener(new ShortcutKeyListener(screenshotStages));
         } catch (NativeHookException e) {
             throw new RuntimeException(e);
         }
-        GlobalScreen.addNativeKeyListener(new NativeKeyListener() {
-            boolean isAltPressed = false;
-            boolean isShiftPressed = false;
-            boolean isMetaPressed = false;
-            boolean isCtrlPressed = false;
-
-            @Override
-            public void nativeKeyPressed(NativeKeyEvent nativeEvent) {
-                isAltPressed = (nativeEvent.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
-                isShiftPressed = (nativeEvent.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
-                isMetaPressed = (nativeEvent.getModifiers() & NativeKeyEvent.META_MASK) != 0;
-                isCtrlPressed = (nativeEvent.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
-
-                if (nativeEvent.getKeyCode() == NativeKeyEvent.VC_X && isAltPressed && isMetaPressed){
-                    Platform.runLater(() -> screenshotStages.forEach(Stage::show));
-                }
-            }
-
-            @Override
-            public void nativeKeyReleased(NativeKeyEvent nativeEvent) {
-                isAltPressed = (nativeEvent.getModifiers() & NativeKeyEvent.ALT_MASK) != 0;
-                isShiftPressed = (nativeEvent.getModifiers() & NativeKeyEvent.SHIFT_MASK) != 0;
-                isMetaPressed = (nativeEvent.getModifiers() & NativeKeyEvent.META_MASK) != 0;
-                isCtrlPressed = (nativeEvent.getModifiers() & NativeKeyEvent.CTRL_MASK) != 0;
-
-
-            }
-        });
 
         Platform.setImplicitExit(false);
     }
