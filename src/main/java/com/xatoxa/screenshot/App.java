@@ -357,6 +357,11 @@ public class App extends Application {
         itemExit.addActionListener(e -> {
             tray.remove(trayIcon);
             Platform.runLater(Platform::exit);
+            try {
+                GlobalScreen.unregisterNativeHook();
+            } catch (NativeHookException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         menu.add(itemShortcut);
