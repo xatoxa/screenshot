@@ -25,15 +25,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.MultiResolutionImage;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class  App extends Application {
     private static int stateWindow = 0;
+    private static List<Stage> screenshotStages;
+    private static Stage stageShortcut;
+
 
     public static void main(String[] args) {
         launch(args);
@@ -46,71 +46,25 @@ public class  App extends Application {
             return;
         }
         //получение stage для всех экранов
-        List<Stage> screenshotStages = getStagesForAllScreens(primaryStage);
+        screenshotStages = getStagesForAllScreens(primaryStage);
 
         //Объект слушателя горячих клавиш
         ShortcutKeyListener shortcutKeyListener = new ShortcutKeyListener(screenshotStages);
 
         //Stage для настройки горячей клавиши
-        Stage stageShortcut = new Stage();
-        javafx.scene.control.Label label = new javafx.scene.control.Label();
-        label.setFont(Font.font("Segoe UI", 15));
-        stageShortcut.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if (!event.getCode().isModifierKey()) {
-                label.setText(createCombo(event).getDisplayText());
-                shortcutKeyListener.refreshShortcutKey(
-                        event.getCode().getCode(),
-                        event.isAltDown(),
-                        event.isShiftDown(),
-                        event.isMetaDown(),
-                        event.isControlDown());
-            }
-        });
-        stageShortcut.setScene(new Scene(new StackPane(label), 500, 300));
-        stageShortcut.setResizable(false);
+        stageShortcut = getShortcutStage(shortcutKeyListener);
 
         //иконка для трея
-        URL url = App.class.getResource("/com/xatoxa/screenshot/image/icon.png");
-        Image image = Toolkit.getDefaultToolkit().getImage(url);
-        final TrayIcon trayIcon = new TrayIcon(image, "Скриншот");
+        final TrayIcon trayIcon = new TrayIcon(
+                Toolkit.getDefaultToolkit().getImage(App.class.getResource("/com/xatoxa/screenshot/image/icon.png")),
+                "Скриншот");
         final SystemTray tray = SystemTray.getSystemTray();
 
         //меню в трее
-        PopupMenu menu = new PopupMenu("Меню");
-
-        MenuItem itemShortcut = new MenuItem("Горячая клавиша");
-        itemShortcut.setActionCommand("Горячая клавиша");
-        itemShortcut.addActionListener(e -> Platform.runLater(stageShortcut::show));
-
-        MenuItem itemExit = new MenuItem("Выход");
-        itemExit.setActionCommand("Выход");
-        itemExit.addActionListener(e -> {
-            tray.remove(trayIcon);
-            Platform.runLater(Platform::exit);
-        });
-
-        menu.add(itemShortcut);
-        menu.add(itemExit);
-        trayIcon.setPopupMenu(menu);
+        trayIcon.setPopupMenu(getMenuForTray(tray, trayIcon));
 
         //listener для иконки в трее
-        trayIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                if (event.getButton() == MouseEvent.BUTTON1) {
-                    //TODO добавить изменение цвета курсора
-                    Platform.runLater(() -> {
-                        if (stateWindow == 1) {
-                            screenshotStages.forEach(Stage::hide);
-                            stateWindow = 0;
-                        } else if (stateWindow == 0) {
-                            screenshotStages.forEach(Stage::show);
-                            stateWindow = 1;
-                        }
-                    });
-                }
-            }
-        });
+        trayIcon.addMouseListener(getAdapterForTray());
 
         try {
             tray.add(trayIcon);
@@ -121,10 +75,6 @@ public class  App extends Application {
         //глобальный прослушиватель нажатий клавиш
         try {
             GlobalScreen.registerNativeHook();
-            Logger logger = Logger.getLogger(GlobalScreen.class.getPackage().getName());
-            logger.setLevel(Level.WARNING);
-            logger.setUseParentHandlers(false);
-
             GlobalScreen.addNativeKeyListener(shortcutKeyListener);
         } catch (NativeHookException e) {
             System.out.println("Global key listener error");
@@ -345,5 +295,66 @@ public class  App extends Application {
             modifiers.add(KeyCombination.SHIFT_DOWN);
         }
         return new KeyCodeCombination(event.getCode(), modifiers.toArray(KeyCombination.Modifier[]::new));
+    }
+
+    private Stage getShortcutStage(ShortcutKeyListener shortcutKeyListener){
+        Stage stage = new Stage();
+        javafx.scene.control.Label label = new javafx.scene.control.Label();
+        label.setFont(Font.font("Segoe UI", 15));
+        stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+            if (!event.getCode().isModifierKey()) {
+                label.setText(createCombo(event).getDisplayText());
+                shortcutKeyListener.refreshShortcutKey(
+                        event.getCode().getCode(),
+                        event.isAltDown(),
+                        event.isShiftDown(),
+                        event.isMetaDown(),
+                        event.isControlDown());
+            }
+        });
+        stage.setScene(new Scene(new StackPane(label), 500, 300));
+        stage.setResizable(false);
+
+        return stage;
+    }
+
+    private PopupMenu getMenuForTray(SystemTray tray, TrayIcon trayIcon){
+        PopupMenu menu = new PopupMenu("Меню");
+
+        MenuItem itemShortcut = new MenuItem("Горячая клавиша");
+        itemShortcut.setActionCommand("Горячая клавиша");
+        itemShortcut.addActionListener(e -> Platform.runLater(stageShortcut::show));
+
+        MenuItem itemExit = new MenuItem("Выход");
+        itemExit.setActionCommand("Выход");
+        itemExit.addActionListener(e -> {
+            tray.remove(trayIcon);
+            Platform.runLater(Platform::exit);
+        });
+
+        menu.add(itemShortcut);
+        menu.add(itemExit);
+
+        return menu;
+    }
+
+    private MouseAdapter getAdapterForTray(){
+        return new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON1) {
+                    //TODO добавить изменение цвета курсора
+                    Platform.runLater(() -> {
+                        if (stateWindow == 1) {
+                            screenshotStages.forEach(Stage::hide);
+                            stateWindow = 0;
+                        } else if (stateWindow == 0) {
+                            screenshotStages.forEach(Stage::show);
+                            stateWindow = 1;
+                        }
+                    });
+                }
+            }
+        };
     }
 }
