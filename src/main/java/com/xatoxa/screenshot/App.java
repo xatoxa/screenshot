@@ -11,6 +11,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
+import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
@@ -169,6 +170,8 @@ public class App extends Application {
                         throw new RuntimeException(e.getMessage());
                     }
                 });
+        javafx.scene.image.Image image = new javafx.scene.image.Image(Objects.requireNonNull(App.class.getResource("/com/xatoxa/screenshot/image/arrow.png")).toExternalForm());
+        scene.setCursor(new ImageCursor(image, 0, 0));
     }
 
     private void showStageScreenshot(ScreenshotRect screenshotRect) throws AWTException {
@@ -315,7 +318,7 @@ public class App extends Application {
     private Stage getShortcutStage(ShortcutKeyListener shortcutKeyListener){
         Stage stage = new Stage();
         javafx.scene.control.Label label = new javafx.scene.control.Label();
-        label.setFont(Font.font("Segoe UI", 15));
+        label.setFont(Font.font("Segue UI", 15));
         label.setAlignment(Pos.CENTER);
         label.setText(getPreferencesTextShortcut());
 
@@ -337,9 +340,7 @@ public class App extends Application {
         });
 
         Button buttonOk = new Button("ОK");
-        buttonOk.setOnAction(actionEvent -> {
-            stage.close();
-        });
+        buttonOk.setOnAction(actionEvent -> stage.close());
         buttonOk.setAlignment(Pos.CENTER);
 
         GridPane gridPane = new GridPane();
@@ -395,7 +396,6 @@ public class App extends Application {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == MouseEvent.BUTTON1) {
-                    //TODO добавить изменение цвета курсора
                     Platform.runLater(() -> {
                         if (stateWindow == 1) {
                             screenshotStages.forEach(Stage::hide);
