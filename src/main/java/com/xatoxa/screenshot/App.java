@@ -6,20 +6,12 @@ import com.github.kwhat.jnativehook.NativeHookException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.ImageCursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
-import javafx.scene.input.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -27,8 +19,6 @@ import javafx.stage.StageStyle;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.awt.image.MultiResolutionImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +28,7 @@ import java.util.prefs.Preferences;
 public class App extends Application {
     private static int stateWindow = 0;
     private static List<Stage> screenshotStages;
-    private static Stage stageShortcut;
-    private static Preferences prefs;
+    private static ShortcutKeyStage stageShortcut;
 
     public static void main(String[] args) {
         launch(args);
@@ -56,7 +45,7 @@ public class App extends Application {
         screenshotStages = getStagesForAllScreens(primaryStage);
 
         //загрузка настроек юзера
-        prefs = Preferences.userRoot();
+        Preferences prefs = Preferences.userRoot();
 
         //Объект слушателя горячих клавиш
         ShortcutKeyListener shortcutKeyListener = new ShortcutKeyListener(
@@ -68,7 +57,7 @@ public class App extends Application {
                         prefs.getBoolean("isCtrl", false));
 
         //Stage для настройки горячей клавиши
-        stageShortcut = getShortcutStage(shortcutKeyListener);
+        stageShortcut = new ShortcutKeyStage(shortcutKeyListener, prefs);
 
         //иконка для трея
         final TrayIcon trayIcon = new TrayIcon(
@@ -165,205 +154,16 @@ public class App extends Application {
                     group.getChildren().clear();
 
                     try {
-                        showStageScreenshot(screenshot);
-                    } catch (AWTException e){
-                        throw new RuntimeException(e.getMessage());
+                        final ScreenshotStage[] scrStage = {new ScreenshotStage(screenshot)};
+                        scrStage[0].show();
+                        scrStage[0].setOnCloseRequest(windowEvent -> scrStage[0] = null);
+                    } catch (AWTException e) {
+                        throw new RuntimeException(e);
                     }
+
                 });
         javafx.scene.image.Image image = new javafx.scene.image.Image(Objects.requireNonNull(App.class.getResource("/com/xatoxa/screenshot/image/arrow.png")).toExternalForm());
         scene.setCursor(new ImageCursor(image, 0, 0));
-    }
-
-    private void showStageScreenshot(ScreenshotRect screenshotRect) throws AWTException {
-        Stage stageImage = new Stage();
-
-        MultiResolutionImage capture = new Robot().createMultiResolutionScreenCapture(screenshotRect.getRectangle());
-        List<Image> resolutionVariants = capture.getResolutionVariants();
-
-        Image bufImage;
-        if (resolutionVariants.size() > 1){
-            bufImage = resolutionVariants.get(1);
-        }else {
-            bufImage = resolutionVariants.get(0);
-        }
-        WritableImage wrImage = new WritableImage(screenshotRect.getW(), screenshotRect.getH());
-
-        wrImage = SwingFXUtils.toFXImage(toBufferedImage(bufImage), wrImage);
-
-        ImageView imageView = new ImageView(wrImage);
-        imageView.setFitWidth(wrImage.getWidth() / Screen.getPrimary().getOutputScaleX());
-        imageView.setFitHeight(wrImage.getHeight() / Screen.getPrimary().getOutputScaleY());
-        ImageViewPane viewPane = new ImageViewPane(imageView);
-
-        //чёрная граница вокруг скриншота
-        BorderPane blackBorder = new BorderPane(viewPane);
-        blackBorder.setStyle(
-                "-fx-border-style: solid; " +
-                "-fx-border-width: 1; " +
-                "-fx-border-color: #000000;");
-
-        Pane spacer = new Pane();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        //нижний бар для кнопок
-        HBox hBox = new HBox(
-                spacer,
-                addCopyToClipboardButton(wrImage, stageImage),
-                addOriginalSizeButton(stageImage, screenshotRect.getRectangle()),
-                addCloseButton(stageImage));
-        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
-
-        //оранжевая граница вокруг скриншота
-        BorderPane root = new BorderPane();
-        root.setCenter(blackBorder);
-        root.setBottom(hBox);
-        root.setStyle(
-                "-fx-border-style: solid; " +
-                "-fx-border-width: 1; " +
-                "-fx-border-color: #ff7f32;");
-
-        Scene sceneImage = new Scene(root);
-
-        //настройки stage
-        stageImage.setScene(sceneImage);
-        stageImage.setX(screenshotRect.getX1());
-        stageImage.setY(screenshotRect.getY1());
-        stageImage.setAlwaysOnTop(true);
-        stageImage.initStyle(StageStyle.UNDECORATED);
-        stageImage.setMinHeight(56);
-        stageImage.setMinWidth(56);
-
-        ResizeHelper.addResizeListener(stageImage);
-
-        stageImage.show();
-    }
-
-    private Button makeButton(String imgRes) {
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image(Objects.requireNonNull(getClass().getResourceAsStream(imgRes)));
-        ImageView view = new ImageView(imgClose);
-        view.setFitHeight(18);
-        view.setPreserveRatio(true);
-        Button btn = new Button();
-        btn.setStyle(
-                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
-        btn.setGraphic(view);
-
-        return btn;
-    }
-
-    private Button addCloseButton(Stage stageImage){
-        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClose.png");
-        btnClose.setOnAction(event -> stageImage.close());
-
-        return btnClose;
-    }
-
-    private Button addOriginalSizeButton(Stage stageImage, Rectangle rect){
-        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
-        btnClose.setOnAction(event -> {
-            stageImage.setHeight(rect.getHeight() + 24);
-            stageImage.setWidth(rect.getWidth() + 4);
-        });
-
-        return btnClose;
-    }
-
-    private Button addCopyToClipboardButton(WritableImage image, Stage stage){
-        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClipboard.png");
-        btnClose.setOnAction(event -> {
-            Clipboard clipboard = Clipboard.getSystemClipboard();
-            ClipboardContent content = new ClipboardContent();
-            content.putImage(image);
-            clipboard.setContent(content);
-
-            stage.close();
-        });
-
-        return btnClose;
-    }
-
-    private BufferedImage toBufferedImage(Image image)
-    {
-        if (image instanceof BufferedImage)
-        {
-            return (BufferedImage) image;
-        }
-
-        BufferedImage bufferedImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
-        Graphics2D graphics = bufferedImage.createGraphics();
-        graphics.drawImage(image, 0, 0, null);
-        graphics.dispose();
-
-        return bufferedImage;
-    }
-
-    private KeyCombination createCombo(KeyEvent event) {
-        var modifiers = new ArrayList<KeyCombination.Modifier>();
-        if (event.isControlDown()) {
-            modifiers.add(KeyCombination.CONTROL_DOWN);
-        }
-        if (event.isMetaDown()) {
-            modifiers.add(KeyCombination.META_DOWN);
-        }
-        if (event.isAltDown()) {
-            modifiers.add(KeyCombination.ALT_DOWN);
-        }
-        if (event.isShiftDown()) {
-            modifiers.add(KeyCombination.SHIFT_DOWN);
-        }
-        return new KeyCodeCombination(event.getCode(), modifiers.toArray(KeyCombination.Modifier[]::new));
-    }
-
-    private Stage getShortcutStage(ShortcutKeyListener shortcutKeyListener){
-        Stage stage = new Stage();
-        javafx.scene.control.Label label = new javafx.scene.control.Label();
-        label.setFont(Font.font("Segue UI", 15));
-        label.setAlignment(Pos.CENTER);
-        label.setText(getPreferencesTextShortcut());
-
-        stage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
-            if (!event.getCode().isModifierKey()) {
-                label.setText(createCombo(event).getDisplayText());
-                shortcutKeyListener.refreshShortcutKey(
-                        event.getCode().getCode(),
-                        event.isAltDown(),
-                        event.isShiftDown(),
-                        event.isMetaDown(),
-                        event.isControlDown());
-                prefs.putInt("keyCode", event.getCode().getCode());
-                prefs.putBoolean("isAlt", event.isAltDown());
-                prefs.putBoolean("isShift", event.isShiftDown());
-                prefs.putBoolean("isMeta", event.isMetaDown());
-                prefs.putBoolean("isCtrl", event.isControlDown());
-            }
-        });
-
-        Button buttonOk = new Button("ОK");
-        buttonOk.setOnAction(actionEvent -> stage.close());
-        buttonOk.setAlignment(Pos.CENTER);
-
-        GridPane gridPane = new GridPane();
-        gridPane.add(label, 0, 0);
-        gridPane.add(buttonOk, 0, 1);
-        GridPane.setHalignment(label, HPos.CENTER);
-        GridPane.setHalignment(buttonOk, HPos.CENTER);
-        gridPane.setAlignment(Pos.CENTER);
-        gridPane.getRowConstraints().addAll(new RowConstraints(50), new RowConstraints(50));
-
-        stage.setScene(new Scene(gridPane, 300, 100));
-        stage.setResizable(false);
-        stage.initStyle(StageStyle.UNIFIED);
-
-        return stage;
-    }
-
-    private String getPreferencesTextShortcut(){
-        return (prefs.getBoolean("isAlt", true) ? "Alt+" : "") +
-                (prefs.getBoolean("isShift", false) ? "Shift+" : "") +
-                (prefs.getBoolean("isMeta", true) ? "Meta+" : "") +
-                (prefs.getBoolean("isCtrl", false) ? "Ctrl+" : "") +
-                (char) (prefs.getInt("keyCode", 88));
     }
 
     private PopupMenu getMenuForTray(SystemTray tray, TrayIcon trayIcon){

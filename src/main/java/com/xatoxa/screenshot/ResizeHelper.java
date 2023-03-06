@@ -41,6 +41,36 @@ public class ResizeHelper {
         }
     }
 
+    public static void removeResizeListener(Stage stage) {
+        ResizeListener resizeListener = new ResizeListener(stage);
+        stage.getScene().removeEventHandler(MouseEvent.MOUSE_MOVED, resizeListener);
+        stage.getScene().removeEventHandler(MouseEvent.MOUSE_PRESSED, resizeListener);
+        stage.getScene().removeEventHandler(MouseEvent.MOUSE_DRAGGED, resizeListener);
+        stage.getScene().removeEventHandler(MouseEvent.MOUSE_EXITED, resizeListener);
+        stage.getScene().removeEventHandler(MouseEvent.MOUSE_EXITED_TARGET, resizeListener);
+        ObservableList<Node> children = stage.getScene().getRoot().getChildrenUnmodifiable();
+        for (Node child : children) {
+            removeListenerDeeply(child, resizeListener);
+        }
+
+        resizeListener = null;
+    }
+
+    public static void removeListenerDeeply(Node node, EventHandler<MouseEvent> listener) {
+        node.removeEventHandler(MouseEvent.MOUSE_MOVED, listener);
+        node.removeEventHandler(MouseEvent.MOUSE_PRESSED, listener);
+        node.removeEventHandler(MouseEvent.MOUSE_DRAGGED, listener);
+        node.removeEventHandler(MouseEvent.MOUSE_EXITED, listener);
+        node.removeEventHandler(MouseEvent.MOUSE_EXITED_TARGET, listener);
+        if (node instanceof Parent) {
+            Parent parent = (Parent) node;
+            ObservableList<Node> children = parent.getChildrenUnmodifiable();
+            for (Node child : children) {
+                removeListenerDeeply(child, listener);
+            }
+        }
+    }
+
     static class ResizeListener implements EventHandler<MouseEvent> {
         private final Stage stage;
         private final int border = 4;
