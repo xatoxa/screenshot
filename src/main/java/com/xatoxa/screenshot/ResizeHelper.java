@@ -7,8 +7,11 @@ import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 //this class is written by Alexander Berg
@@ -73,6 +76,7 @@ public class ResizeHelper {
 
     static class ResizeListener implements EventHandler<MouseEvent> {
         private final Stage stage;
+        private final ObservableList<Node> buttons;
         private final int border = 4;
         private Cursor cursorEvent = Cursor.DEFAULT;
         private double startX = 0;
@@ -85,6 +89,9 @@ public class ResizeHelper {
 
         public ResizeListener(Stage stage) {
             this.stage = stage;
+
+            HBox hb = (HBox) stage.getScene().getRoot().getChildrenUnmodifiable().get(1);
+            buttons = hb.getChildren();
         }
 
         @Override
@@ -108,10 +115,12 @@ public class ResizeHelper {
             if (MouseEvent.MOUSE_MOVED.equals(mouseEventType)) {
                 setResizeCursor(scene, mouseEventX, mouseEventY);
             } else if(MouseEvent.MOUSE_EXITED.equals(mouseEventType) || MouseEvent.MOUSE_EXITED_TARGET.equals(mouseEventType)){
+                buttons.forEach(button -> button.setDisable(false));
                 scene.setCursor(Cursor.DEFAULT);
             } else if (MouseEvent.MOUSE_PRESSED.equals(mouseEventType)) {
                 prepareVarsThenMousePressed(mouseEvent, mouseEventX, mouseEventY);
             } else if (MouseEvent.MOUSE_DRAGGED.equals(mouseEventType)) {
+                buttons.forEach(button -> button.setDisable(true));
                 resizeStage(mouseEvent, mouseEventX, mouseEventY);
             }
         }
@@ -121,22 +130,31 @@ public class ResizeHelper {
                     sceneHeight = scene.getHeight();
             if (mouseEventX < border && mouseEventY < border) {
                 cursorEvent = Cursor.NW_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventX < border && mouseEventY > sceneHeight - border) {
                 cursorEvent = Cursor.SW_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventX > sceneWidth - border && mouseEventY < border) {
                 cursorEvent = Cursor.NE_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventX > sceneWidth - border && mouseEventY > sceneHeight - border) {
                 cursorEvent = Cursor.SE_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventX < border) {
                 cursorEvent = Cursor.W_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventX > sceneWidth - border) {
                 cursorEvent = Cursor.E_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventY < border) {
                 cursorEvent = Cursor.N_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else if (mouseEventY > sceneHeight - border) {
                 cursorEvent = Cursor.S_RESIZE;
+                buttons.forEach(button -> button.setDisable(true));
             } else {
                 cursorEvent = Cursor.DEFAULT;
+                buttons.forEach(button -> button.setDisable(false));
             }
             scene.setCursor(cursorEvent);
         }

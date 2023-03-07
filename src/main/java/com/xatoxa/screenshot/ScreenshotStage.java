@@ -63,9 +63,8 @@ public class ScreenshotStage extends Stage {
                 addCopyToClipboardButton(),
                 addOriginalSizeButton(screenshotRect.getRectangle()),
                 addCloseButton());
-        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
-        hBox.setPadding(new Insets(1, 5, 0, 0));
-        hBox.setSpacing(5);
+        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 18; -fx-max-height: 18");
+        hBox.setPadding(new Insets(0, 5, 0, 0));
 
         //оранжевая граница вокруг скриншота
         BorderPane root = new BorderPane();
