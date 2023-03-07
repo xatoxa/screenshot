@@ -86,6 +86,8 @@ public class App extends Application {
         }
 
         Platform.setImplicitExit(false);
+
+        System.gc();
     }
 
     private List<Stage> getStagesForAllScreens(Stage primaryStage){

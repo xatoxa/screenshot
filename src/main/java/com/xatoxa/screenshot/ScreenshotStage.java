@@ -2,6 +2,7 @@ package com.xatoxa.screenshot;
 
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -63,6 +64,8 @@ public class ScreenshotStage extends Stage {
                 addOriginalSizeButton(screenshotRect.getRectangle()),
                 addCloseButton());
         hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 20; -fx-max-height: 20");
+        hBox.setPadding(new Insets(1, 5, 0, 0));
+        hBox.setSpacing(5);
 
         //оранжевая граница вокруг скриншота
         BorderPane root = new BorderPane();
@@ -88,38 +91,42 @@ public class ScreenshotStage extends Stage {
     }
 
     private Button makeButton(String imgRes) {
-        javafx.scene.image.Image imgClose = new javafx.scene.image.Image(Objects.requireNonNull(getClass().getResourceAsStream(imgRes)));
+        javafx.scene.image.Image imgClose =
+                new javafx.scene.image.Image(Objects.requireNonNull(getClass().getResourceAsStream(imgRes)));
         ImageView view = new ImageView(imgClose);
         view.setFitHeight(18);
         view.setPreserveRatio(true);
-        Button btn = new Button();
-        btn.setStyle(
-                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18;");
-        btn.setGraphic(view);
+        Button button = new Button();
+        button.setStyle(
+                "-fx-min-height: 18; -fx-max-height: 18; -fx-min-width: 18; -fx-max-width: 18; -fx-focus-color: transparent; -fx-faint-focus-color: transparent; -fx-background-insets: 0, 0, 1, 1; -fx-end-padding: 5px;");
+        button.setGraphic(view);
 
-        return btn;
+        return button;
     }
 
     private javafx.scene.control.Button addCloseButton(){
-        javafx.scene.control.Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClose.png");
-        btnClose.setOnAction(event -> closeThisStage());
+        javafx.scene.control.Button button = makeButton("/com/xatoxa/screenshot/image/btnClose.png");
+        button.setOnAction(event -> closeThisStage());
+        button.setCancelButton(true);
+        button.setFocusTraversable(false);
 
-        return btnClose;
+        return button;
     }
 
     private javafx.scene.control.Button addOriginalSizeButton(Rectangle rect){
-        javafx.scene.control.Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
-        btnClose.setOnAction(event -> {
+        javafx.scene.control.Button button = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
+        button.setOnAction(event -> {
             this.setHeight(rect.getHeight() + 24);
             this.setWidth(rect.getWidth() + 4);
         });
+        button.setFocusTraversable(false);
 
-        return btnClose;
+        return button;
     }
 
     private javafx.scene.control.Button addCopyToClipboardButton(){
-        Button btnClose = makeButton("/com/xatoxa/screenshot/image/btnClipboard.png");
-        btnClose.setOnAction(event -> {
+        Button button = makeButton("/com/xatoxa/screenshot/image/btnClipboard.png");
+        button.setOnAction(event -> {
             Clipboard clipboard = Clipboard.getSystemClipboard();
             ClipboardContent content = new ClipboardContent();
             content.putImage(this.wrImage);
@@ -128,7 +135,7 @@ public class ScreenshotStage extends Stage {
             closeThisStage();
         });
 
-        return btnClose;
+        return button;
     }
 
     private BufferedImage toBufferedImage(Image image)
