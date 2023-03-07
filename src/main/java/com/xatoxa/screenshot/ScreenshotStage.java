@@ -63,7 +63,7 @@ public class ScreenshotStage extends Stage {
                 addCopyToClipboardButton(),
                 addOriginalSizeButton(screenshotRect.getRectangle()),
                 addCloseButton());
-        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 18; -fx-max-height: 18");
+        hBox.setStyle("-fx-background-color: #ff7f32; -fx-min-height: 17; -fx-max-height: 17");
         hBox.setPadding(new Insets(0, 5, 0, 0));
 
         //оранжевая граница вокруг скриншота
@@ -115,6 +115,8 @@ public class ScreenshotStage extends Stage {
     private javafx.scene.control.Button addOriginalSizeButton(Rectangle rect){
         javafx.scene.control.Button button = makeButton("/com/xatoxa/screenshot/image/btnBack.png");
         button.setOnAction(event -> {
+            if (this.getX() < 0) this.setX(0);
+            if (this.getY() < 0) this.setY(0);
             this.setHeight(rect.getHeight() + 24);
             this.setWidth(rect.getWidth() + 4);
         });
