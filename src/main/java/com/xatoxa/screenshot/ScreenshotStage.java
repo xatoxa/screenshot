@@ -2,6 +2,7 @@ package com.xatoxa.screenshot;
 
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingFXUtils;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -11,6 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -85,6 +88,12 @@ public class ScreenshotStage extends Stage {
         this.initStyle(StageStyle.UNDECORATED);
         this.setMinHeight(56);
         this.setMinWidth(56);
+
+        //закрытие окна по клику ПКМ
+        sceneImage.setOnMouseClicked(mouseEvent -> {
+            if (mouseEvent.getButton().equals(MouseButton.SECONDARY))
+                closeThisStage();
+        });
 
         ResizeHelper.addResizeListener(this);
     }
