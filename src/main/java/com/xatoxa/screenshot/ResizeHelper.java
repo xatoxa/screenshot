@@ -154,7 +154,8 @@ public class ResizeHelper {
                             double y = mouseEvent.getScreenY() - sceneOffsetY;
 
                             stage.setHeight(height);
-                            stage.setY(y);
+                            if (!(Cursor.NW_RESIZE.equals(cursorEvent) || Cursor.NE_RESIZE.equals(cursorEvent)))
+                                stage.setY(y);
 
                             if (!isShiftDown) {
                                 stage.setWidth(stage.getHeight() * ratioWidth);
@@ -178,7 +179,9 @@ public class ResizeHelper {
                             double x = mouseEvent.getScreenX() - sceneOffsetX;
 
                             stage.setWidth(width);
-                            stage.setX(x);
+
+                            if (!(Cursor.NW_RESIZE.equals(cursorEvent) || Cursor.SW_RESIZE.equals(cursorEvent)))
+                                stage.setX(x);
 
                             if (!isShiftDown) {
                                 stage.setHeight(stage.getWidth() * ratioHeight);
