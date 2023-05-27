@@ -117,7 +117,7 @@ public class ScreenshotStage extends Stage {
         button.setOnAction(event -> {
             if (this.getX() < 0) this.setX(0);
             if (this.getY() < 0) this.setY(0);
-            this.setHeight(rect.getHeight() + 24);
+            this.setHeight(rect.getHeight() + 21);
             this.setWidth(rect.getWidth() + 4);
         });
         button.setFocusTraversable(false);
