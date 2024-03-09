@@ -6,7 +6,7 @@
 
     <groupId>com.xatoxa</groupId>
     <artifactId>screenshot</artifactId>
-    <version>1.0.6</version>
+    <version>1.0.7</version>
     <name>screenshot</name>
 
     <properties>

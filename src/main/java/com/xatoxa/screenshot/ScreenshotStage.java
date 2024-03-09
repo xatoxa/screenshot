@@ -31,7 +31,7 @@ import java.util.Objects;
 public class ScreenshotStage extends Stage {
     private WritableImage wrImage;
 
-    public ScreenshotStage(ScreenshotRect screenshotRect) throws AWTException {
+    public ScreenshotStage(ScreenshotRect screenshotRect) throws AWTException, IllegalArgumentException {
         MultiResolutionImage capture = new Robot().createMultiResolutionScreenCapture(screenshotRect.getRectangle());
         List<Image> resolutionVariants = capture.getResolutionVariants();
 

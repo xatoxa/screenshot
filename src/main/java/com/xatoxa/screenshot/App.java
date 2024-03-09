@@ -161,8 +161,9 @@ public class App extends Application {
                         scrStage[0].setOnCloseRequest(windowEvent -> scrStage[0] = null);
                     } catch (AWTException e) {
                         throw new RuntimeException(e);
+                    } catch (IllegalArgumentException e){
+                        System.out.println("0");
                     }
-
                 });
         javafx.scene.image.Image image = new javafx.scene.image.Image(Objects.requireNonNull(App.class.getResource("/com/xatoxa/screenshot/image/arrow.png")).toExternalForm());
         scene.setCursor(new ImageCursor(image, 0, 0));
